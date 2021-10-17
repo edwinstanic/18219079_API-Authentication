@@ -1,4 +1,6 @@
 import json
+with open("menu.json", "r") as read_file:
+      data = json.load(read_file)
 
 from datetime import datetime, timedelta
 from typing import Optional
@@ -115,17 +117,71 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-# Read User Information
-@app.get("/users/me/", response_model=User)
-async def read_users_me(current_user: User = Depends(get_current_active_user)):
-    return current_user
-
-# Read User's Item
-@app.get("/users/me/items/")
-async def read_own_items(current_user: User = Depends(get_current_active_user)):
-    return [{"item_id": "Foo", "owner": current_user.username}]
-
 # Read Hash Result
 @app.get("/pass")
 async def get_hash(password: str):
     return pwd_context.hash(password)
+
+"""
+Core Operation
+1. Read Menu - GET
+2. Update Menu - PUT
+3. Add Menu  - POST
+4. Delete Menu - DELETE
+"""
+@app.get('/menu/{item_id}')
+async def read_menu(item_id: int, current_user: User = Depends(get_current_active_user)):
+      for menu_item in data['menu']:
+            if menu_item['id'] == item_id:
+                  return menu_item
+
+      raise HTTPException(
+            status_code=404, detail=f'Item not found'
+      )
+
+@app.put('/menu/{item_id}')
+async def update_menu(item_id: int, name: str, current_user: User = Depends(get_current_active_user)):
+    for menu_item in data['menu']:
+        if menu_item['id'] == item_id:
+            menu_item['name'] = name
+            read_file.close()
+
+            with open("menu.json", "w") as write_file:
+                json.dump(data, write_file, indent=4)
+            
+            return menu_item, {"Message": "Menu data updated"}
+    
+    raise HTTPException(
+        status_code=404, detail=f'Item not found'
+    )
+
+@app.post('/menu')
+async def add_menu(name: str, current_user: User = Depends(get_current_active_user)):
+    id = 1
+    if (len(data['menu']) >= 1):
+        id = data['menu'][len(data['menu']) - 1]['id'] + 1
+    
+    new_menu = {'id': id, "name": name}
+    data['menu'].append(new_menu)
+    read_file.close()
+
+    with open("menu.json", "w") as write_file:
+        json.dump(data, write_file, indent=4)
+        
+    return (new_menu), {"Message": "Menu added"}
+
+@app.delete('/menu/{item_id}')
+async def delete_menu(item_id: int, current_user: User = Depends(get_current_active_user)):
+    for menu_item in data['menu']:
+        if menu_item['id'] == item_id:
+            data['menu'].remove(menu_item)
+            read_file.close()
+
+            with open("menu.json", "w") as write_file:
+                json.dump(data, write_file, indent=4)
+            
+            return {"Response": "Menu data deleted"}
+    
+    raise HTTPException(
+        status_code=404, detail=f'Item not found'
+    )
