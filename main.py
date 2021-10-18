@@ -1,6 +1,6 @@
 import json
 with open("menu.json", "r") as read_file:
-      data = json.load(read_file)
+    data = json.load(read_file)
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -11,7 +11,6 @@ from typing import Optional
 
 SECRET_KEY = "c095f58bc240512438ca166c46ddf95254cecc0e53414a934529899d0685047c"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 users_db = {
     "asdf": {
