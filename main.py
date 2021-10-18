@@ -115,20 +115,25 @@ async def get_hash(password: str):
 
 """
 Core Operation
-1. Read Menu - GET
+1. Read All Menu - GET
+1. Read Certain Menu - GET
 2. Update Menu - PUT
 3. Add Menu  - POST
 4. Delete Menu - DELETE
 """
-@app.get('/menu/{item_id}')
-async def read_menu(item_id: int, current_user: User = Depends(get_current_active_user)):
-      for menu_item in data['menu']:
-            if menu_item['id'] == item_id:
-                  return menu_item
+@app.get('/menu')
+async def read_all_menu(current_user: User = Depends(get_current_active_user)):
+    return data['menu']
 
-      raise HTTPException(
-            status_code=404, detail=f'Item not found'
-      )
+@app.get('/menu/{item_id}')
+async def read_certain_menu(item_id: int, current_user: User = Depends(get_current_active_user)):
+    for menu_item in data['menu']:
+        if menu_item['id'] == item_id:
+                return menu_item
+
+    raise HTTPException(
+        status_code=404, detail=f'Item not found'
+    )
 
 @app.put('/menu/{item_id}')
 async def update_menu(item_id: int, name: str, current_user: User = Depends(get_current_active_user)):
